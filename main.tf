@@ -21,7 +21,7 @@ resource "random_pet" "api_name" {}
 
 resource "auth0_resource_server" "api" {
   name        = random_pet.api_name.id
-  identifier  = "https://${random_pet.api_name.id}"
+  identifier  = "https://${var.dream_project_id}.${var.dream_workspace}"
   signing_alg = "RS256"
 
   allow_offline_access                            = true

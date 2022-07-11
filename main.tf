@@ -33,7 +33,7 @@ data "auth0_tenant" "current" {}
 
 output "AUTH0_ISSUER" {
   sensitive = true
-  value     = "https://${data.auth0_tenant.current.domain}"
+  value     = "https://${data.auth0_tenant.current.domain}/"
 }
 
 output "AUTH0_AUDIENCE" {

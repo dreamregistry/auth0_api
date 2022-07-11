@@ -24,6 +24,7 @@ resource "auth0_resource_server" "api" {
   identifier  = "https://${random_pet.api_name.id}"
   signing_alg = "RS256"
 
+  allow_offline_access                            = true
   skip_consent_for_verifiable_first_party_clients = true
 }
 

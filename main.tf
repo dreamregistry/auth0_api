@@ -1,5 +1,5 @@
 terraform {
-      backend "s3" {}
+    backend "s3" {}
 
   required_providers {
     random = {
@@ -26,6 +26,14 @@ resource "auth0_resource_server" "api" {
 
   allow_offline_access                            = true
   skip_consent_for_verifiable_first_party_clients = true
+  dynamic "scopes" {
+    for_each = var.scopes
+
+    content {
+      value       = scopes.value.value
+      description = scopes.value.description
+    }
+  }
 }
 
 resource "random_pet" "client_name" {

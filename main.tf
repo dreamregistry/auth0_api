@@ -75,3 +75,8 @@ output "TEST_AUTH0_CLIENT_SECRET" {
   sensitive = true
   value     = var.create_auth0_api_test_client ? auth0_client.client[0].client_secret : null
 }
+
+output "TEST_AUTH0_CLIENT_ACCESS_TOKEN_URL" {
+  sensitive = true
+  value     = var.create_auth0_api_test_client ? "https://${data.auth0_tenant.current.domain}/oauth/token" : null
+}

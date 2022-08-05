@@ -1,5 +1,5 @@
 terraform {
-    backend "s3" {}
+  backend "s3" {}
 
   required_providers {
     random = {
@@ -23,6 +23,8 @@ resource "auth0_resource_server" "api" {
   name        = random_pet.api_name.id
   identifier  = "https://${var.dream_project_id}.${var.dream_workspace}"
   signing_alg = "RS256"
+
+  enforce_policies = true
 
   allow_offline_access                            = true
   skip_consent_for_verifiable_first_party_clients = true

@@ -5,3 +5,8 @@ variable "dream_project_id" {
 variable "dream_workspace" {
   type = string
 }
+
+variable "create_auth0_api_test_client" {
+  type    = bool
+  default = false
+}

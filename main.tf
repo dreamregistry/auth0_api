@@ -1,5 +1,5 @@
 terraform {
-  backend "s3" {}
+      backend "s3" {}
 
   required_providers {
     random = {
@@ -28,6 +28,31 @@ resource "auth0_resource_server" "api" {
   skip_consent_for_verifiable_first_party_clients = true
 }
 
+resource "random_pet" "client_name" {
+  count = var.create_auth0_api_test_client ? 1 : 0
+}
+// test client for auth0_resource_server.api
+resource "auth0_client" "client" {
+  count       = var.create_auth0_api_test_client ? 1 : 0
+  name        = random_pet.client_name[0].id
+  description = "test client for ${auth0_resource_server.api.name}"
+  app_type    = "non_interactive"
+  jwt_configuration {
+    alg = "RS256"
+  }
+  oidc_conformant = true
+  grant_types     = ["client_credentials"]
+}
+resource "auth0_client_grant" "client_grant" {
+  count     = var.create_auth0_api_test_client ? 1 : 0
+  audience  = auth0_resource_server.api.identifier
+  client_id = auth0_client.client[0].id
+  scope     = [
+  for scope in auth0_resource_server.api.scopes :
+  scope.value
+  ]
+}
+
 
 data "auth0_tenant" "current" {}
 
@@ -39,4 +64,14 @@ output "AUTH0_ISSUER" {
 output "AUTH0_AUDIENCE" {
   sensitive = true
   value     = auth0_resource_server.api.identifier
+}
+
+output "TEST_AUTH0_CLIENT_ID" {
+  sensitive = true
+  value     = var.create_auth0_api_test_client ? auth0_client.client[0].client_id : null
+}
+
+output "TEST_AUTH0_CLIENT_SECRET" {
+  sensitive = true
+  value     = var.create_auth0_api_test_client ? auth0_client.client[0].client_secret : null
 }

@@ -6,16 +6,22 @@ terraform {
       source  = "registry.terraform.io/hashicorp/random"
       version = "3.2.0"
     }
-
     auth0 = {
       source  = "registry.terraform.io/auth0/auth0"
       version = "0.32.0"
+    }
+    aws = {
+      source  = "registry.terraform.io/hashicorp/aws"
+      version = "~> 4.0"
     }
   }
 }
 
 provider "random" {}
 provider "auth0" {}
+provider "aws" {}
+
+data "aws_region" "current" {}
 
 resource "random_pet" "api_name" {}
 
@@ -63,30 +69,38 @@ resource "auth0_client_grant" "client_grant" {
   ]
 }
 
+resource "aws_ssm_parameter" "test_client_secret" {
+  count = var.create_auth0_api_test_client ? 1 : 0
+  name        = "/auth0_api/test/${auth0_client.client.0.name}/client-secret"
+  description = "The auth0 client secret"
+  type        = "SecureString"
+  value       = auth0_client.client.0.client_secret
+}
+
 
 data "auth0_tenant" "current" {}
 
 output "AUTH0_ISSUER" {
-  sensitive = true
   value     = "https://${data.auth0_tenant.current.domain}/"
 }
 
 output "AUTH0_AUDIENCE" {
-  sensitive = true
   value     = auth0_resource_server.api.identifier
 }
 
 output "TEST_AUTH0_CLIENT_ID" {
-  sensitive = true
   value     = var.create_auth0_api_test_client ? auth0_client.client[0].client_id : null
 }
 
 output "TEST_AUTH0_CLIENT_SECRET" {
-  sensitive = true
-  value     = var.create_auth0_api_test_client ? auth0_client.client[0].client_secret : null
+  value = var.create_auth0_api_test_client ? {
+    type   = "ssm"
+    arn    = aws_ssm_parameter.test_client_secret.0.arn
+    key    = aws_ssm_parameter.test_client_secret.0.name
+    region = data.aws_region.current.name
+  }: null
 }
 
 output "TEST_AUTH0_CLIENT_ACCESS_TOKEN_URL" {
-  sensitive = true
   value     = var.create_auth0_api_test_client ? "https://${data.auth0_tenant.current.domain}/oauth/token" : null
 }
